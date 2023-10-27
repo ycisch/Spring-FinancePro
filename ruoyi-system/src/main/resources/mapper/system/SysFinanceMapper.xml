@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysFinanceMapper">
+
+    <resultMap type="SysFinance" id="SysFinanceResult">
+        <result property="financeId" column="finance_id"/>
+        <result property="financeIncome" column="finance_income"/>
+        <result property="financeExpenditure" column="finance_expenditure"/>
+        <result property="financeCreate" column="finance_create"/>
+        <result property="financeUpdate" column="finance_update"/>
+        <result property="deleted" column="deleted"/>
+        <result property="financeBalance" column="finance_balance"/>
+        <result property="financeType" column="finance_type"/>
+        <result property="financeInfo" column="finance_info"/>
+        <result property="financeDec" column="finance_dec"/>
+        <result property="financeFlag" column="finance_flag"/>
+        <result property="financeExpendTime" column="finance_expend_time"/>
+    </resultMap>
+
+    <resultMap id="SysFinanceSysTypeResult" type="SysFinance" extends="SysFinanceResult">
+        <association property="sysType" notNullColumn="sub_type_id" resultMap="SysTypeResult"/>
+    </resultMap>
+
+    <resultMap type="SysType" id="SysTypeResult">
+        <result property="typeId" column="sub_type_id"/>
+        <result property="typeName" column="sub_type_name"/>
+        <result property="typeTime" column="sub_type_time"/>
+        <result property="typeInfo" column="sub_type_info"/>
+        <result property="deleted" column="sub_deleted"/>
+    </resultMap>
+
+    <sql id="selectSysFinanceVo">
+        select a.finance_id,
+               a.finance_income,
+               a.finance_expenditure,
+               a.finance_create,
+               a.finance_update,
+               a.deleted,
+               a.finance_balance,
+               a.finance_type,
+               a.finance_info,
+               a.finance_dec,
+               a.finance_flag,
+               a.finance_expend_time
+        from sys_finance a
+    </sql>
+
+    <sql id="selectSysFinanceTypeVo">
+        select a.finance_id,
+               a.finance_income,
+               a.finance_expenditure,
+               a.finance_create,
+               a.finance_update,
+               a.deleted,
+               a.finance_balance,
+               a.finance_type,
+               a.finance_info,
+               a.finance_dec,
+               a.finance_flag,
+               a.finance_expend_time,
+               b.type_id as   sub_type_id,
+               b.type_name as sub_type_name,
+               b.type_time as sub_type_time,
+               b.type_info as sub_type_info,
+               b.deleted as   sub_deleted
+        from sys_finance a
+                 left join sys_type b on b.type_id = a.finance_type
+    </sql>
+
+    <select id="selectSysFinanceList" parameterType="SysFinance" resultMap="SysFinanceSysTypeResult">
+        <include refid="selectSysFinanceTypeVo"/>
+        <where>
+            <if test="financeIncome != null ">and a.finance_income = #{financeIncome}</if>
+            <if test="financeExpenditure != null ">and a.finance_expenditure = #{financeExpenditure}</if>
+            <if test="financeType != null  and financeType != ''">and a.finance_type = #{financeType}</if>
+            <if test="financeDec != null  and financeDec != ''">and a.finance_dec like concat('%', #{financeDec}, '%')
+            </if>
+            <if test="financeFlag != null  and financeFlag != ''">and a.finance_flag = #{financeFlag}</if>
+            <if test="deleted != null  and deleted != ''">and a.deleted = #{deleted}</if>
+        </where>
+    </select>
+
+    <select id="selectSysFinanceByFinanceId" parameterType="Long" resultMap="SysFinanceSysTypeResult">
+        <include refid="selectSysFinanceTypeVo"/>
+        where a.finance_id = #{financeId}
+    </select>
+
+    <insert id="insertSysFinance" parameterType="SysFinance" useGeneratedKeys="true" keyProperty="financeId">
+        insert into sys_finance
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="financeIncome != null">finance_income,</if>
+            <if test="financeExpenditure != null">finance_expenditure,</if>
+            <if test="financeCreate != null">finance_create,</if>
+            <if test="financeUpdate != null">finance_update,</if>
+            <if test="deleted != null">deleted,</if>
+            <if test="financeBalance != null">finance_balance,</if>
+            <if test="financeType != null">finance_type,</if>
+            <if test="financeInfo != null">finance_info,</if>
+            <if test="financeDec != null">finance_dec,</if>
+            <if test="financeFlag != null">finance_flag,</if>
+            <if test="financeExpendTime != null">finance_expend_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="financeIncome != null">#{financeIncome},</if>
+            <if test="financeExpenditure != null">#{financeExpenditure},</if>
+            <if test="financeCreate != null">#{financeCreate},</if>
+            <if test="financeUpdate != null">#{financeUpdate},</if>
+            <if test="deleted != null">#{deleted},</if>
+            <if test="financeBalance != null">#{financeBalance},</if>
+            <if test="financeType != null">#{financeType},</if>
+            <if test="financeInfo != null">#{financeInfo},</if>
+            <if test="financeDec != null">#{financeDec},</if>
+            <if test="financeFlag != null">#{financeFlag},</if>
+            <if test="financeExpendTime != null">#{financeExpendTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysFinance" parameterType="SysFinance">
+        update sys_finance
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="financeIncome != null">finance_income = #{financeIncome},</if>
+            <if test="financeExpenditure != null">finance_expenditure = #{financeExpenditure},</if>
+            <if test="financeCreate != null">finance_create = #{financeCreate},</if>
+            <if test="financeUpdate != null">finance_update = #{financeUpdate},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            <if test="financeBalance != null">finance_balance = #{financeBalance},</if>
+            <if test="financeType != null">finance_type = #{financeType},</if>
+            <if test="financeInfo != null">finance_info = #{financeInfo},</if>
+            <if test="financeDec != null">finance_dec = #{financeDec},</if>
+            <if test="financeFlag != null">finance_flag = #{financeFlag},</if>
+            <if test="financeExpendTime != null">finance_expend_time = #{financeExpendTime}</if>
+        </trim>
+        where finance_id = #{financeId}
+    </update>
+
+
+    <update id="deleteSysFinanceByFinanceIds" parameterType="String">
+        update sys_finance set deleted = "1" where finance_id in
+        <foreach item="financeId" collection="array" open="(" separator="," close=")">
+            #{financeId}
+        </foreach>
+    </update>
+
+    <delete id="deleteSysFinanceByFinanceId" parameterType="Long">
+        delete
+        from sys_finance
+        where finance_id = #{financeId}
+    </delete>
+
+    <!--    <delete id="deleteSysFinanceByFinanceIds" parameterType="String">-->
+    <!--        delete from sys_finance where finance_id in-->
+    <!--        <foreach item="financeId" collection="array" open="(" separator="," close=")">-->
+    <!--            #{financeId}-->
+    <!--        </foreach>-->
+    <!--    </delete>-->
+
+    <delete id="deleteSysTypeByTypeIds" parameterType="String">
+        delete from sys_type where type_id in
+        <foreach item="typeId" collection="array" open="(" separator="," close=")">
+            #{typeId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSysTypeByTypeId" parameterType="Long">
+        delete
+        from sys_type
+        where type_id = #{typeId}
+    </delete>
+
+    <insert id="batchSysType">
+        insert into sys_type( type_id, type_name, type_time, type_info, deleted) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.typeId}, #{item.typeName}, #{item.typeTime}, #{item.typeInfo}, #{item.deleted})
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysFinanceRecordMapper">
+
+    <resultMap type="SysFinanceRecord" id="SysFinanceRecordResult">
+        <result property="id"    column="id"    />
+        <result property="financeIds"    column="finance_ids"    />
+        <result property="recordTime"    column="record_time"    />
+        <result property="recordMoney"    column="record_money"    />
+        <result property="operator"    column="operator"    />
+    </resultMap>
+
+    <sql id="selectSysFinanceRecordVo">
+        select id, finance_ids, record_time, record_money, operator from sys_finance_record
+    </sql>
+
+    <select id="selectSysFinanceRecordList" parameterType="SysFinanceRecord" resultMap="SysFinanceRecordResult">
+        <include refid="selectSysFinanceRecordVo"/>
+        <where>
+            <if test="financeIds != null "> and finance_ids = #{financeIds}</if>
+            <if test="recordTime != null "> and record_time = #{recordTime}</if>
+            <if test="recordMoney != null "> and record_money = #{recordMoney}</if>
+            <if test="operator != null  and operator != ''"> and operator = #{operator}</if>
+        </where>
+    </select>
+
+    <select id="selectSysFinanceRecordById" parameterType="Long" resultMap="SysFinanceRecordResult">
+        <include refid="selectSysFinanceRecordVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSysFinanceRecord" parameterType="SysFinanceRecord" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_finance_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="financeIds != null">finance_ids,</if>
+            <if test="recordTime != null">record_time,</if>
+            <if test="recordMoney != null">record_money,</if>
+            <if test="operator != null">operator,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="financeIds != null">#{financeIds},</if>
+            <if test="recordTime != null">#{recordTime},</if>
+            <if test="recordMoney != null">#{recordMoney},</if>
+            <if test="operator != null">#{operator},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysFinanceRecord" parameterType="SysFinanceRecord">
+        update sys_finance_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="financeIds != null">finance_ids = #{financeIds},</if>
+            <if test="recordTime != null">record_time = #{recordTime},</if>
+            <if test="recordMoney != null">record_money = #{recordMoney},</if>
+            <if test="operator != null">operator = #{operator},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysFinanceRecordById" parameterType="Long">
+        delete from sys_finance_record where id = #{id}
+    </delete>
+
+    <delete id="deleteSysFinanceRecordByIds" parameterType="String">
+        delete from sys_finance_record where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
