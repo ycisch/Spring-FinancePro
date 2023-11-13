@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysInvestmentMapper">
+
+    <resultMap type="SysInvestment" id="SysInvestmentResult">
+        <result property="id"    column="id"    />
+        <result property="typeId"    column="type_id"    />
+        <result property="investor"    column="investor"    />
+        <result property="investment"    column="investment"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="operator"    column="operator"    />
+    </resultMap>
+
+    <sql id="selectSysInvestmentVo">
+        select id, type_id, investor, investment, create_time, operator from sys_investment
+    </sql>
+
+    <select id="selectSysInvestmentList" parameterType="SysInvestment" resultMap="SysInvestmentResult">
+        <include refid="selectSysInvestmentVo"/>
+        <where>
+            <if test="typeId != null "> and type_id = #{typeId}</if>
+            <if test="investor != null  and investor != ''"> and investor = #{investor}</if>
+            <if test="investment != null  and investment != ''"> and investment = #{investment}</if>
+            <if test="operator != null  and operator != ''"> and operator = #{operator}</if>
+        </where>
+    </select>
+
+    <select id="selectSysInvestmentById" parameterType="Long" resultMap="SysInvestmentResult">
+        <include refid="selectSysInvestmentVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSysInvestment" parameterType="SysInvestment" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_investment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="typeId != null">type_id,</if>
+            <if test="investor != null">investor,</if>
+            <if test="investment != null">investment,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="operator != null">operator,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="typeId != null">#{typeId},</if>
+            <if test="investor != null">#{investor},</if>
+            <if test="investment != null">#{investment},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="operator != null">#{operator},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysInvestment" parameterType="SysInvestment">
+        update sys_investment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="typeId != null">type_id = #{typeId},</if>
+            <if test="investor != null">investor = #{investor},</if>
+            <if test="investment != null">investment = #{investment},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="operator != null">operator = #{operator},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysInvestmentById" parameterType="Long">
+        delete from sys_investment where id = #{id}
+    </delete>
+
+    <delete id="deleteSysInvestmentByIds" parameterType="String">
+        delete from sys_investment where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

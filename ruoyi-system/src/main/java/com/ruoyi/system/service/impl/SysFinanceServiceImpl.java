@@ -1,6 +1,10 @@
 package com.ruoyi.system.service.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+
+import com.ruoyi.system.domain.SysStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.SysFinanceMapper;
@@ -50,6 +54,21 @@ public class SysFinanceServiceImpl implements ISysFinanceService
         return sysFinanceMapper.selectSysFinanceList(sysFinance);
     }
 
+    @Override
+    public List<SysFinance> selectSysFinanceListContainTime(SysFinance sysFinance) {
+        return sysFinanceMapper.selectSysFinanceListContainTime(sysFinance);
+    }
+
+    @Override
+    public List<SysStatic> selectSysFinanceMoney() {
+        return sysFinanceMapper.selectSysFinanceMoney();
+    }
+
+    @Override
+    public List<SysFinance> selectSysFinanceListOrderByTime() {
+        return sysFinanceMapper.selectSysFinanceListOrderByTime();
+    }
+
     /**
      * 新增财务格
 - 主要用于存储多个格之间的信息
@@ -76,6 +95,11 @@ public class SysFinanceServiceImpl implements ISysFinanceService
     public int updateSysFinance(SysFinance sysFinance)
     {
         return sysFinanceMapper.updateSysFinance(sysFinance);
+    }
+
+    @Override
+    public int updateSysFinanceFlagInfo(SysFinance sysFinance) {
+        return sysFinanceMapper.updateSysFinanceFlagInfo(sysFinance);
     }
 
     /**

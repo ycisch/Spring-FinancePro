@@ -2,6 +2,9 @@ package com.ruoyi.web.controller.system;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -63,6 +66,30 @@ public class SysFinanceController extends BaseController {
     }
 
     /**
+     * 分sheetName导出当前表格信息
+     * @param response
+     * @param sysFinance
+     */
+    @PreAuthorize("@ss.hasPermi('system:finance:export')")
+    @Log(title = "财务格 - 主要用于存储多个格之间的信息", businessType = BusinessType.EXPORT)
+    @PostMapping("/exportInfo")
+    public void exportInfo(HttpServletResponse response, SysFinance sysFinance) {
+        List<SysFinance> list = sysFinanceService.selectSysFinanceList(sysFinance);
+        // 使用流和Collectors.groupingBy方法按照financeType分类
+        Map<Integer, List<SysFinance>> classifiedList = list.stream()
+                .collect(Collectors.groupingBy(SysFinance::getFinanceType));
+        // 遍历分类后的列表
+        classifiedList.forEach((financeType, financeList) -> {
+            System.out.println("Finance Type: " + financeType);
+            System.out.println("Finance List: ");
+            financeList.forEach(System.out::println);
+            System.out.println("===============================");
+        });
+        ExcelUtil<SysFinance> util = new ExcelUtil<SysFinance>(SysFinance.class);
+        util.exportExcel(response, list, "财务格 - 主要用于存储多个格之间的信息数据");
+    }
+
+    /**
      * 获取财务格
      * - 主要用于存储多个格之间的信息详细信息
      */
@@ -81,7 +108,7 @@ public class SysFinanceController extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody SysFinance sysFinance) {
         //获取现在创建时间
-        if(sysFinance.getFinanceFlag() != null && "0".equals(sysFinance.getFinanceFlag())){
+        if (sysFinance.getFinanceFlag() != null && "0".equals(sysFinance.getFinanceFlag())) {
             sysFinance.setFinanceExpendTime(sysFinance.getFinanceCreate());
         }
         sysFinance.setFinanceUpdate(sysFinance.getFinanceCreate());
@@ -97,6 +124,9 @@ public class SysFinanceController extends BaseController {
     @PutMapping
     public AjaxResult edit(@RequestBody SysFinance sysFinance) {
         sysFinance.setFinanceUpdate(new Date());
+        if (sysFinance.getFinanceFlag().equals("1")) {
+            sysFinance.setFinanceExpendTime(null);
+        }
         return toAjax(sysFinanceService.updateSysFinance(sysFinance));
     }
 

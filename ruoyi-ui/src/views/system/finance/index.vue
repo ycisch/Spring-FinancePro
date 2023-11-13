@@ -76,7 +76,7 @@
       </el-table-column>
       <el-table-column label="所属类型" align="center" prop="sysType.typeName" />
       <el-table-column label="描述" align="center" prop="financeDec" />
-      <!-- <el-table-column label="描述" align="center" prop="financeInfo" /> -->
+      <!-- <el-table-column label="详细信息" align="center" prop="financeInfo" /> -->
       <el-table-column label="状态(结清，未结)" align="center" prop="financeFlag">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.sys_finanace_flag" :value="scope.row.financeFlag" />
@@ -112,7 +112,7 @@
       @pagination="getList" />
 
     <!-- 添加或修改财务格主要用于存储多个格之间的信息对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="130px">
         <el-form-item label="财务收入(元)" prop="financeIncome">
           <el-input v-model="form.financeIncome" placeholder="请输入财务收入" />
@@ -146,17 +146,18 @@
         </el-form-item>
       </el-form>
       <!-- 设置自定义字段 -->
-      <el-form>
-        <el-form-item>
-
-        </el-form-item>
+      <el-form ref="basicForm" :model="financeBasicData" label-width="120px">
+        <template v-for="(item, index) in dictDateList">
+          <el-form-item :label="item.infoName" :prop="item.infoName">
+            <el-input v-model="financeBasicData[item.infoName]" placeholder="请输入金额"></el-input>
+          </el-form-item>
+        </template>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
-
 
 
     <!-- 查看结账记录信息 -->
@@ -170,7 +171,7 @@
           <el-button type="danger" plain icon="el-icon-delete" size="mini" :disabled="multipleRecord"
             @click="handleDeleteRecord" v-hasPermi="['system:finance:remove']">删除</el-button>
         </el-col>
-        <right-toolbar  @queryTable="getRecordList"></right-toolbar>
+        <right-toolbar @queryTable="getRecordList"></right-toolbar>
       </el-row>
 
       <el-table v-loading="loading" :data="sysFinanceRecordList" @selection-change="handleRecordSelectionChange">
@@ -200,6 +201,9 @@
         </el-table-column>
       </el-table>
 
+      <pagination v-show="recordtotal > 0" :total="recordtotal" :page.sync="queryRecordParams.pageNum"
+        :limit.sync="queryRecordParams.pageSize" @pagination="getRecordList" />
+
     </el-dialog>
 
 
@@ -208,7 +212,8 @@
     <el-dialog :title="recordAddTitle" :visible.sync="recordAddOpen" width="500px" append-to-body>
       <el-form ref="recordform" :model="recordform" :rules="recordrules" label-width="80px">
         <el-form-item label="结账时间" prop="recordTime">
-          <el-date-picker clearable v-model="recordform.recordTime" type="date" value-format="yyyy-MM-dd" placeholder="请选择结账时间">
+          <el-date-picker clearable v-model="recordform.recordTime" type="date" value-format="yyyy-MM-dd"
+            placeholder="请选择结账时间">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="结账金额" prop="recordMoney">
@@ -227,6 +232,7 @@
 <script>
 import { listFinance, getFinance, delFinance, addFinance, updateFinance } from "@/api/system/finance";
 import { listRecord, getRecord, delRecord, addRecord, updateRecord } from "@/api/system/record";
+import { getFinanceBasicInfo } from "@/api/system/info";
 import { getTypeList } from "@/api/system/redis";
 
 export default {
@@ -237,6 +243,7 @@ export default {
       // 遮罩层
       loading: true,
       recordloading: true,
+      addOtherInfo: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -252,7 +259,7 @@ export default {
       // 总条数
       total: 0,
       //记录总条数
-      recordtotal:0,
+      recordtotal: 0,
       // 财务格主要用于存储多个格之间的信息表格数据
       financeList: [],
       // 弹出层标题
@@ -264,10 +271,16 @@ export default {
       financeTypes: [],
       sysFinanceRecordList: [],
       financeId: null,
+      addShow:true,
 
       //添加记录
       recordAddOpen: false,
       recordAddTitle: "",
+
+      //基础字段
+      otherInfoList: [],
+      financeBasicData: {},
+      dictDateList:[],
 
       // 查询参数
       queryParams: {
@@ -288,6 +301,10 @@ export default {
         financeDec: null,
         financeFlag: "结清",
         financeCreate: null,
+      },
+      dictParams: {
+        dictType: '',
+        infoTypeId: null,
       },
       // 表单校验
       rules: {
@@ -322,6 +339,17 @@ export default {
     this.getList();
     this.getTypeList();
   },
+  watch: {
+    'form.financeType': {
+      handler(newValue, oldValue) {
+        this.dictParams.infoTypeId = newValue;
+        if (newValue != undefined) {
+          this.getDictDateList();
+        }
+      }
+    },
+
+  },
   methods: {
     /** 查询财务格主要用于存储多个格之间的信息列表 */
     getList() {
@@ -339,6 +367,8 @@ export default {
     },
     // 取消按钮
     cancel() {
+      this.dictDateList = [];
+      this.financeBasicData = {},
       this.open = false;
       this.reset();
     },
@@ -377,6 +407,7 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
+      this.addShow = false;
       this.getTypeList();
       this.reset();
       this.open = true;
@@ -393,10 +424,12 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      this.addShow = true;
       this.reset();
       const financeId = row.financeId || this.ids
       getFinance(financeId).then(response => {
         this.form = response.data;
+        this.financeBasicData = JSON.parse(response.data.financeInfo);
         // this.form.financeType = response.data.sysType.typeName;
         this.open = true;
         this.title = "修改信息";
@@ -406,6 +439,8 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          let strCustomFields = JSON.stringify(this.financeBasicData);
+          this.form.financeInfo = strCustomFields;
           if (this.form.financeId != null) {
             console.log(this.form)
             updateFinance(this.form).then(response => {
@@ -440,6 +475,14 @@ export default {
       }, `finance_${new Date().getTime()}.xlsx`)
     },
 
+    //基础数据
+    /** 查询该类型的隐蔽致灾因素的具体字段*/
+    getDictDateList() {
+      this.dictDateList = []
+      getFinanceBasicInfo(this.dictParams).then(response => {
+        this.dictDateList = response.rows;
+      });
+    },
 
 
     // record方法
@@ -500,12 +543,16 @@ export default {
               this.$modal.msgSuccess("修改成功");
               this.recordAddOpen = false;
               this.getRecordList();
+              this.getList();
+              this.resetRecord();
             });
           } else {
             addRecord(this.recordform).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.recordAddOpen = false;
               this.getRecordList();
+              this.getList();
+              this.resetRecord();
             });
           }
         }
@@ -514,9 +561,13 @@ export default {
     /** 删除按钮操作 */
     handleDeleteRecord(row) {
       const ids = row.id || this.ids;
+      let queryForm = {};
+      queryForm.ids = ids;
+      queryForm.financeId = this.financeId;
       this.$modal.confirm('是否确认删除结账记录格编号为"' + ids + '"的数据项？').then(function () {
-        return delRecord(ids);
+        return delRecord(queryForm);
       }).then(() => {
+        this.getRecordList();
         this.getList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => { });

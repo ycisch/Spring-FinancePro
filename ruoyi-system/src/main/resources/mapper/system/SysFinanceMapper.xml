@@ -19,6 +19,13 @@
         <result property="financeExpendTime" column="finance_expend_time"/>
     </resultMap>
 
+    <resultMap type="SysStatic" id="SysStaticResult">
+        <result property="staticName" column="staticName"/>
+        <result property="typeId" column="typeId"/>
+        <result property="expendMoney" column="expendMoney"/>
+        <result property="incomeMoney" column="incomeMoney"/>
+    </resultMap>
+
     <resultMap id="SysFinanceSysTypeResult" type="SysFinance" extends="SysFinanceResult">
         <association property="sysType" notNullColumn="sub_type_id" resultMap="SysTypeResult"/>
     </resultMap>
@@ -82,6 +89,77 @@
         </where>
     </select>
 
+    <select id="selectSysFinanceListContainTime" parameterType="SysFinance" resultMap="SysFinanceSysTypeResult">
+        <include refid="selectSysFinanceTypeVo"/>
+        <where>
+            <if test="financeIncome != null ">and a.finance_income = #{financeIncome}</if>
+            <if test="financeExpenditure != null ">and a.finance_expenditure = #{financeExpenditure}</if>
+            <if test="financeType != null  and financeType != ''">and a.finance_type = #{financeType}</if>
+            <if test="financeDec != null  and financeDec != ''">and a.finance_dec like concat('%', #{financeDec}, '%')
+            </if>
+            <if test="financeFlag != null  and financeFlag != ''">and a.finance_flag = #{financeFlag}</if>
+            <if test="deleted != null  and deleted != ''">and a.deleted = #{deleted}</if>
+            <if test="financeCreate != null and financeExpendTime != null">
+                and DATE(a.finance_create) between DATE(#{financeCreate}) and DATE(#{financeExpendTime})
+            </if>
+        </where>
+    </select>
+
+    <select id="selectSysFinanceMoney" resultMap="SysStaticResult">
+        SELECT
+            SUM( sys.finance_expenditure ) - IFNULL( SUM( sfr.record_money ), 0 ) AS expendMoney,
+            IFNULL( SUM( finance_income ), 0 ) AS incomeMoney,
+            sys.finance_type AS typeId,
+            ty.type_name AS staticName
+        FROM
+            sys_finance sys
+                LEFT JOIN sys_type ty ON sys.finance_type = ty.type_id
+                LEFT JOIN (
+                SELECT
+                    IF
+                        (
+                                sys_finance.finance_flag = '0',
+                                sys_finance.finance_expenditure,
+                                SUM( sys_finance_record.record_money )) AS record_money,
+                    sys_finance.finance_flag,
+                    sys_finance_record.finance_ids,
+                    sys_finance.deleted
+                FROM
+                    sys_finance
+                        LEFT JOIN sys_finance_record ON sys_finance.finance_id = sys_finance_record.finance_ids
+                WHERE
+                    sys_finance.deleted = '0'
+                GROUP BY
+                    sys_finance_record.finance_ids
+            ) sfr ON sys.finance_id = sfr.finance_ids
+        WHERE
+            sys.deleted = '0'
+          AND ty.deleted = '0'
+        GROUP BY
+            sys.finance_type
+--         SELECT
+--             SUM( sys.finance_expenditure ) - IFNULL( SUM( sfr.record_money ), 0 ) AS expendMoney,
+--             IFNULL( SUM( finance_income ), 0 ) AS incomeMoney,
+--             sys.finance_type AS typeId,
+--             ty.type_name AS staticName
+--         FROM
+--             sys_finance sys
+--                 LEFT JOIN sys_type ty ON sys.finance_type = ty.type_id
+--                 LEFT JOIN sys_finance_record sfr ON sys.finance_id = sfr.finance_ids
+--         WHERE
+--             sys.deleted = '0'
+--           AND ty.deleted = '0'
+--         GROUP BY
+--             sys.finance_type
+    </select>
+
+    <select id="selectSysFinanceListOrderByTime" parameterType="SysFinance" resultMap="SysFinanceSysTypeResult">
+        <include refid="selectSysFinanceTypeVo"/>
+        WHERE a.deleted = '0'
+        ORDER BY
+        a.finance_create DESC
+    </select>
+
     <select id="selectSysFinanceByFinanceId" parameterType="Long" resultMap="SysFinanceSysTypeResult">
         <include refid="selectSysFinanceTypeVo"/>
         where a.finance_id = #{financeId}
@@ -131,6 +209,17 @@
             <if test="financeDec != null">finance_dec = #{financeDec},</if>
             <if test="financeFlag != null">finance_flag = #{financeFlag},</if>
             <if test="financeExpendTime != null">finance_expend_time = #{financeExpendTime}</if>
+            <if test="financeExpendTime == null">finance_expend_time = NULL</if>
+        </trim>
+        where finance_id = #{financeId}
+    </update>
+
+    <update id="updateSysFinanceFlagInfo" parameterType="SysFinance">
+        update sys_finance
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="financeFlag != null">finance_flag = #{financeFlag},</if>
+            <if test="financeExpendTime != null">finance_expend_time = #{financeExpendTime}</if>
+            <if test="financeExpendTime == null || financeExpendTime = ''">finance_expend_time = NULL</if>
         </trim>
         where finance_id = #{financeId}
     </update>

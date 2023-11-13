@@ -50,3 +50,13 @@ export function deleteSysTypeInfos(typeId) {
     method: 'delete'
   })
 }
+
+// 修改格信息用于保存多个格 每个格都有自己的名称 类似于Excel
+export function submitInfo(data) {
+  return request({
+    url: '/system/type/submitInfo',
+    method: 'post',
+    data: data
+  })
+}
+

@@ -1,7 +1,10 @@
 package com.ruoyi.web.controller.system;
 
 
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.SysFinance;
+import com.ruoyi.system.domain.SysFinanceRecord;
+import com.ruoyi.system.service.ISysFinanceRecordService;
 import com.ruoyi.system.service.ISysFinanceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +26,21 @@ public class SysTypeControllerTest {
     @Autowired
     ISysFinanceService service;
 
+    @Autowired
+    ISysFinanceRecordService iSysFinanceRecordService;
+
+    @Autowired
+    SysFinanceController sysFinanceController;
+
+    @Test
+    void export(){
+
+    }
+
     @Test
     void add() {
-        String filePath = "E:\\记账本10.25.xlsx";
-        String sheetName = "3号收其他核桃仁合计";
+        String filePath = "E:\\记账本10.30.xlsx";
+        String sheetName = "他人欠款账目";
         List<ReadExcel.Info> infos = ReadExcel.readExcel(filePath, sheetName);
         int year = 0;
         List<SysFinance> list = new ArrayList<>();
@@ -85,46 +99,61 @@ public class SysTypeControllerTest {
                 }
                 x++;
             }
-            if (info.getCount().contains("-")) {
-//                System.out.println(info.getCount());
-                hashMap.put(info.getCount(), date1);
-                hashMap1.put(info.getCount(), info.getName());
-                continue;
-            }
-            if (info.getName().contains("应付")) {
-                if (info.getType()) {
-                    finance.setFinanceType(15);
-                    finance.setFinanceFlag("0");
-                    finance.setFinanceCreate(Date.valueOf(date1));
-                    finance.setFinanceExpenditure(new BigDecimal(info.getCount()));
-                } else {
-                    finance.setFinanceType(15);
-                    finance.setFinanceFlag("1");
-                    finance.setFinanceCreate(Date.valueOf(date1));
-                    finance.setFinanceExpenditure(new BigDecimal(info.getCount()));
-                }
-                finance.setFinanceInfo(info.getCount());
-                list.add(finance);
-            } else if (info.getName().contains("已付")) {
+//            if (info.getCount().contains("-")) {
+////                System.out.println(info.getCount());
+//                hashMap.put(info.getCount(), date1);
+//                hashMap1.put(info.getCount(), info.getName());
+//                continue;
+//            }
+//            if (info.getName().contains("应付")) {
+//                if (info.getType()) {
+//                    finance.setFinanceType(20);
+//                    finance.setFinanceFlag("0");
+//                    finance.setFinanceCreate(Date.valueOf(date1));
+//                    finance.setFinanceExpenditure(new BigDecimal(info.getCount()));
+//                } else {
+//                    finance.setFinanceType(20);
+//                    finance.setFinanceFlag("1");
+//                    finance.setFinanceCreate(Date.valueOf(date1));
+//                    finance.setFinanceExpenditure(new BigDecimal(info.getCount()));
+//                }
+//                finance.setFinanceInfo(info.getCount());
+//                list.add(finance);
+//            } else if (info.getName().contains("已付")) {
+//
+//            }
 
+            if(info.getCount().contains("-")){
+                finance.setFinanceType(22);
+                finance.setFinanceFlag("0");
+                finance.setFinanceCreate(Date.valueOf(date1));
+                finance.setFinanceExpendTime(Date.valueOf(date1));
+                finance.setFinanceIncome(new BigDecimal(info.getCount().replace("-","")));
+            } else{
+                finance.setFinanceType(22);
+                finance.setFinanceFlag("1");
+                finance.setFinanceCreate(Date.valueOf(date1));
+                finance.setFinanceExpenditure(new BigDecimal(info.getCount()));
             }
+            list.add(finance);
         }
 
         for (int i = 0; i < list.size(); i++) {
             SysFinance sysFinance = list.get(i);
-            String count = "-" + sysFinance.getFinanceInfo();
-            System.out.println(count);
-            if (hashMap.containsKey(count)) {
-                // 格式化日期为 "yyyy/M/d" 格式
-                String formattedDate = hashMap.get(count).format(DateTimeFormatter.ofPattern("yyyy/M/d"));
-                System.out.println("转换后的日期：" + formattedDate);
-                sysFinance.setFinanceExpendTime(Date.valueOf(hashMap.get(count)));
-                sysFinance.setFinanceInfo(hashMap1.get(count));
+//            String count = "-" + sysFinance.getFinanceInfo();
+//            System.out.println(count);
+//            if (hashMap.containsKey(count)) {
+//                // 格式化日期为 "yyyy/M/d" 格式
+//                String formattedDate = hashMap.get(count).format(DateTimeFormatter.ofPattern("yyyy/M/d"));
+//                System.out.println("转换后的日期：" + formattedDate);
+//                sysFinance.setFinanceExpendTime(Date.valueOf(hashMap.get(count)));
+//                sysFinance.setFinanceInfo(hashMap1.get(count));
 //                System.out.println(sysFinance.getFinanceInfo() + "\n"
 //                        + sysFinance.getFinanceDec() + "\n"
 //                        + hashMap1.get(count));
-            }
-//            service.insertSysFinance(sysFinance);
+//            }
+//            System.out.println(sysFinance.getFinanceInfo()+"\n" + sysFinance.getFinanceDec());
+            service.insertSysFinance(sysFinance);
 
 //            SysFinance sysFinance1 = new SysFinance();
 //            sysFinance1.setFinanceExpenditure(new BigDecimal(sysFinance.getFinanceInfo()));
@@ -146,11 +175,28 @@ public class SysTypeControllerTest {
         List<SysFinance> list = service.selectSysFinanceList(sysFinance);
         for(int i = 0; i < list.size(); i++){
             SysFinance sysFinance1 = list.get(i);
-            if(sysFinance1.getFinanceFlag().equals("1")){
+            if(sysFinance1.getFinanceFlag().equals("1") && sysFinance1.getFinanceType() == 20){
                 BigDecimal financeExpenditure = sysFinance1.getFinanceExpenditure();
                 result = result.add(financeExpenditure);
             }
         }
         System.out.println("总收入 " + result);
+    }
+
+
+    @Test
+    void insertRecord(){
+        SysFinance sysFinance = new SysFinance();
+        sysFinance.setDeleted("0");
+        BigDecimal result = BigDecimal.valueOf(0);
+        List<SysFinance> list = service.selectSysFinanceList(sysFinance);
+        for(int i = 0; i < list.size(); i++){
+            SysFinance sysFinance1 = list.get(i);
+            SysFinanceRecord sysFinanceRecord = new SysFinanceRecord();
+            sysFinanceRecord.setFinanceIds(sysFinance1.getFinanceId());
+            sysFinanceRecord.setRecordTime(sysFinance1.getFinanceExpendTime());
+            sysFinanceRecord.setRecordMoney(sysFinance1.getFinanceExpenditure());
+            iSysFinanceRecordService.insertSysFinanceRecord(sysFinanceRecord);
+        }
     }
 }

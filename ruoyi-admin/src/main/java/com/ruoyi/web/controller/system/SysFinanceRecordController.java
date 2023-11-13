@@ -1,17 +1,15 @@
 package com.ruoyi.system.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.utils.SecurityUtils;
+import com.ruoyi.system.domain.SysFinance;
+import com.ruoyi.system.service.ISysFinanceService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -29,18 +27,19 @@ import com.ruoyi.common.core.page.TableDataInfo;
  */
 @RestController
 @RequestMapping("/system/record")
-public class SysFinanceRecordController extends BaseController
-{
+public class SysFinanceRecordController extends BaseController {
     @Autowired
     private ISysFinanceRecordService sysFinanceRecordService;
+
+    @Autowired
+    private ISysFinanceService sysFinanceService;
 
     /**
      * 查询结账记录格列表
      */
     @PreAuthorize("@ss.hasPermi('system:record:list')")
     @GetMapping("/list")
-    public TableDataInfo list(SysFinanceRecord sysFinanceRecord)
-    {
+    public TableDataInfo list(SysFinanceRecord sysFinanceRecord) {
         startPage();
         List<SysFinanceRecord> list = sysFinanceRecordService.selectSysFinanceRecordList(sysFinanceRecord);
         return getDataTable(list);
@@ -52,8 +51,7 @@ public class SysFinanceRecordController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:record:export')")
     @Log(title = "结账记录格", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, SysFinanceRecord sysFinanceRecord)
-    {
+    public void export(HttpServletResponse response, SysFinanceRecord sysFinanceRecord) {
         List<SysFinanceRecord> list = sysFinanceRecordService.selectSysFinanceRecordList(sysFinanceRecord);
         ExcelUtil<SysFinanceRecord> util = new ExcelUtil<SysFinanceRecord>(SysFinanceRecord.class);
         util.exportExcel(response, list, "结账记录格数据");
@@ -64,8 +62,7 @@ public class SysFinanceRecordController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:record:query')")
     @GetMapping(value = "/{id}")
-    public AjaxResult getInfo(@PathVariable("id") Long id)
-    {
+    public AjaxResult getInfo(@PathVariable("id") Long id) {
         return success(sysFinanceRecordService.selectSysFinanceRecordById(id));
     }
 
@@ -75,9 +72,13 @@ public class SysFinanceRecordController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:record:add')")
     @Log(title = "结账记录格", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody SysFinanceRecord sysFinanceRecord)
-    {
-        return toAjax(sysFinanceRecordService.insertSysFinanceRecord(sysFinanceRecord));
+    public AjaxResult add(@RequestBody SysFinanceRecord sysFinanceRecord) {
+        sysFinanceRecord.setOperator(SecurityUtils.getUsername());
+        sysFinanceRecordService.insertSysFinanceRecord(sysFinanceRecord);
+        if(!checkRecord(sysFinanceRecord)){
+            return error("金额有误,请重新检查");
+        }
+        return toAjax(true);
     }
 
     /**
@@ -86,9 +87,12 @@ public class SysFinanceRecordController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:record:edit')")
     @Log(title = "结账记录格", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody SysFinanceRecord sysFinanceRecord)
-    {
-        return toAjax(sysFinanceRecordService.updateSysFinanceRecord(sysFinanceRecord));
+    public AjaxResult edit(@RequestBody SysFinanceRecord sysFinanceRecord) {
+        sysFinanceRecordService.updateSysFinanceRecord(sysFinanceRecord);
+        if(!checkRecord(sysFinanceRecord)){
+            return error("金额有误,请重新检查");
+        }
+        return toAjax(true);
     }
 
     /**
@@ -96,9 +100,43 @@ public class SysFinanceRecordController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:record:remove')")
     @Log(title = "结账记录格", businessType = BusinessType.DELETE)
-    @DeleteMapping("/{ids}")
-    public AjaxResult remove(@PathVariable Long[] ids)
-    {
-        return toAjax(sysFinanceRecordService.deleteSysFinanceRecordByIds(ids));
+    @GetMapping("deleteRecord")
+    public AjaxResult remove(@RequestParam("ids") Long[] ids, @RequestParam("financeId") Long financeId) {
+        sysFinanceRecordService.deleteSysFinanceRecordByIds(ids);
+        SysFinanceRecord sysFinanceRecord = new SysFinanceRecord();
+        sysFinanceRecord.setFinanceIds(financeId);
+        if(!checkRecord(sysFinanceRecord)){
+            return error("金额有误,请重新检查");
+        }
+        return toAjax(true);
+    }
+
+    public boolean checkRecord(SysFinanceRecord sysFinanceRecord) {
+
+        SysFinanceRecord sysFinanceRecord1 = new SysFinanceRecord();
+        Long financeIds = sysFinanceRecord.getFinanceIds();
+        SysFinance sysFinance = sysFinanceService.selectSysFinanceByFinanceId(financeIds);
+        sysFinanceRecord1.setFinanceIds(sysFinanceRecord.getFinanceIds());
+        //查看当前结账金额是否等于出账金额
+        List<SysFinanceRecord> sysFinanceRecords = sysFinanceRecordService.selectSysFinanceRecordList(sysFinanceRecord1);
+        BigDecimal bigDecimal = new BigDecimal(0);
+        for (int i = 0; i < sysFinanceRecords.size(); i++) {
+            bigDecimal = bigDecimal.add(sysFinanceRecords.get(i).getRecordMoney());
+        }
+        if(sysFinance.getFinanceExpenditure().compareTo(bigDecimal) == 0){
+            sysFinance.setFinanceFlag("0");
+            sysFinance.setFinanceExpendTime(sysFinanceRecord.getRecordTime());
+            sysFinanceService.updateSysFinance(sysFinance);
+        } else if(sysFinance.getFinanceExpenditure().compareTo(bigDecimal) > 0){
+            //将flag和时间重置
+            sysFinance.setFinanceFlag("1");
+            sysFinance.setFinanceExpendTime(null);
+            sysFinanceService.updateSysFinanceFlagInfo(sysFinance);
+        } else if(sysFinance.getFinanceExpenditure().compareTo(bigDecimal) < 0){
+            //还款错误 请仔细检查
+            return false;
+        }
+        return true;
+
     }
 }

@@ -5,24 +5,30 @@
 <mapper namespace="com.ruoyi.system.mapper.SysTypeMapper">
 
     <resultMap type="SysType" id="SysTypeResult">
-        <result property="typeId"    column="type_id"    />
-        <result property="typeName"    column="type_name"    />
-        <result property="typeTime"    column="type_time"    />
-        <result property="typeInfo"    column="type_info"    />
-        <result property="deleted"    column="deleted"    />
+        <result property="typeId" column="type_id"/>
+        <result property="typeName" column="type_name"/>
+        <result property="typeTime" column="type_time"/>
+        <result property="typeInfo" column="type_info"/>
+        <result property="deleted" column="deleted"/>
+        <result property="typeFlag" column="type_flag"/>
+        <result property="typeMoney" column="type_money"/>
+        <result property="typeDesc" column="type_desc"/>
     </resultMap>
 
     <sql id="selectSysTypeVo">
-        select type_id, type_name, type_time, type_info, deleted from sys_type
+        select type_id, type_name, type_time, type_info, deleted,type_money,type_flag,type_desc
+        from sys_type
     </sql>
 
     <select id="selectSysTypeList" parameterType="SysType" resultMap="SysTypeResult">
         <include refid="selectSysTypeVo"/>
         <where>
-            <if test="typeName != null  and typeName != ''"> and type_name like concat('%', #{typeName}, '%')</if>
-            <if test="typeTime != null "> and type_time = #{typeTime}</if>
-            <if test="typeInfo != null  and typeInfo != ''"> and type_info = #{typeInfo}</if>
-            <if test="deleted != null  and deleted != ''"> and deleted = #{deleted}</if>
+            <if test="typeName != null  and typeName != ''">and type_name like concat('%', #{typeName}, '%')</if>
+<!--            <if test="typeTime != null ">and type_time = #{typeTime}</if>-->
+            <if test="typeInfo != null  and typeInfo != ''">and type_info = #{typeInfo}</if>
+            <if test="deleted != null  and deleted != ''">and deleted = #{deleted}</if>
+            <if test="typeFlag != null  and typeFlag != ''">and type_flag = #{typeFlag}</if>
+            <if test="typeDesc != null  and typeDesc != ''">and type_desc = #{typeDesc}</if>
         </where>
     </select>
 
@@ -38,12 +44,16 @@
             <if test="typeTime != null">type_time,</if>
             <if test="typeInfo != null">type_info,</if>
             <if test="deleted != null">deleted,</if>
+            <if test="typeFlag != null">type_flag,</if>
+            <if test="typeDesc != null">type_desc,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="typeName != null">#{typeName},</if>
             <if test="typeTime != null">#{typeTime},</if>
             <if test="typeInfo != null">#{typeInfo},</if>
             <if test="deleted != null">#{deleted},</if>
+            <if test="typeFlag != null">#{typeFlag},</if>
+            <if test="typeDesc != null">#{typeDesc},</if>
         </trim>
     </insert>
 
@@ -54,24 +64,29 @@
             <if test="typeTime != null">type_time = #{typeTime},</if>
             <if test="typeInfo != null">type_info = #{typeInfo},</if>
             <if test="deleted != null">deleted = #{deleted},</if>
+            <if test="typeFlag != null">type_flag = #{typeFlag},</if>
+            <if test="typeDesc != null">type_desc = #{typeDesc},</if>
         </trim>
         where type_id = #{typeId}
     </update>
 
     <update id="deleteSysTypeInfo" parameterType="SysType">
-        update sys_type set deleted = "1"
+        update sys_type
+        set deleted = "1"
         where type_id = #{typeId}
     </update>
 
     <update id="deleteSysTypeInfos" parameterType="SysType">
-        update sys_type set deleted = "1"  where type_id in
+        update sys_type set deleted = "1" where type_id in
         <foreach item="typeId" collection="array" open="(" separator="," close=")">
             #{typeId}
         </foreach>
     </update>
 
     <delete id="deleteSysTypeByTypeId" parameterType="Long">
-        delete from sys_type where type_id = #{typeId}
+        delete
+        from sys_type
+        where type_id = #{typeId}
     </delete>
 
     <delete id="deleteSysTypeByTypeIds" parameterType="String">

@@ -1,6 +1,8 @@
 package com.ruoyi.system.domain;
 
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -36,6 +38,65 @@ public class SysType extends BaseEntity
     /** 是否删除 */
     @Excel(name = "是否删除")
     private String deleted;
+
+    /**
+     * 合作状态
+     */
+    private String typeFlag;
+
+    /**
+     * 投资金额
+     */
+    private String typeMoney;
+
+    /**
+     * 表格类型(收入、支出)
+     */
+    private String typeDesc;
+
+    private List<SysInvestment> typeRecordRefList;
+
+    private List<SysInfo> typeInfoList ;
+
+    public String getTypeDesc() {
+        return typeDesc;
+    }
+
+    public void setTypeDesc(String typeDesc) {
+        this.typeDesc = typeDesc;
+    }
+
+    public List<SysInfo> getTypeInfoList() {
+        return typeInfoList;
+    }
+
+    public void setTypeInfoList(List<SysInfo> typeInfoList) {
+        this.typeInfoList = typeInfoList;
+    }
+
+    public String getTypeFlag() {
+        return typeFlag;
+    }
+
+    public void setTypeFlag(String typeFlag) {
+        this.typeFlag = typeFlag;
+    }
+
+    public List<SysInvestment> getTypeRecordRefList() {
+        return typeRecordRefList;
+    }
+
+    public void setTypeRecordRefList(List<SysInvestment> typeRecordRefList) {
+        this.typeRecordRefList = typeRecordRefList;
+    }
+
+    public String getTypeMoney() {
+        return typeMoney;
+    }
+
+    public void setTypeMoney(String typeMoney) {
+        this.typeMoney = typeMoney;
+    }
 
     public void setTypeId(Long typeId)
     {
@@ -85,12 +146,17 @@ public class SysType extends BaseEntity
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-                .append("typeId", getTypeId())
-                .append("typeName", getTypeName())
-                .append("typeTime", getTypeTime())
-                .append("typeInfo", getTypeInfo())
-                .append("deleted", getDeleted())
-                .toString();
+        return "SysType{" +
+                "typeId=" + typeId +
+                ", typeName='" + typeName + '\'' +
+                ", typeTime=" + typeTime +
+                ", typeInfo='" + typeInfo + '\'' +
+                ", deleted='" + deleted + '\'' +
+                ", typeFlag='" + typeFlag + '\'' +
+                ", typeMoney='" + typeMoney + '\'' +
+                ", typeDesc='" + typeDesc + '\'' +
+                ", typeRecordRefList=" + typeRecordRefList +
+                ", typeInfoList=" + typeInfoList +
+                '}';
     }
 }

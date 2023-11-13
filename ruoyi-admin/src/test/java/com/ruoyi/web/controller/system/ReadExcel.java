@@ -23,8 +23,8 @@ public class ReadExcel {
             Sheet sheet = workbook.getSheet(sheetName);
 
             for (Row row : sheet) {
-                Cell cellB = row.getCell(1); // B 列
-                Cell cellC = row.getCell(2); // C 列
+                Cell cellB = row.getCell(0); // A 列
+                Cell cellC = row.getCell(1); // B 列
 
                 if (cellB != null && cellC != null) {
                     String name = cellB.getStringCellValue();

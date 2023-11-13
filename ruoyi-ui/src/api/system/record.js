@@ -36,9 +36,10 @@ export function updateRecord(data) {
 }
 
 // 删除结账记录格
-export function delRecord(id) {
+export function delRecord(data) {
   return request({
-    url: '/system/record/' + id,
-    method: 'delete'
+    url: '/system/record/deleteRecord',
+    method: 'get',
+    params:data
   })
 }

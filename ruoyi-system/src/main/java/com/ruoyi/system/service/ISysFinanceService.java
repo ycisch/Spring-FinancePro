@@ -1,7 +1,11 @@
 package com.ruoyi.system.service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+
 import com.ruoyi.system.domain.SysFinance;
+import com.ruoyi.system.domain.SysStatic;
 
 /**
  * 财务格
@@ -34,6 +38,19 @@ public interface ISysFinanceService
      */
     public List<SysFinance> selectSysFinanceList(SysFinance sysFinance);
 
+
+
+    public List<SysFinance> selectSysFinanceListContainTime(SysFinance sysFinance);
+
+    /**
+     * 获取金额信息
+     * @param sysFinance
+     * @return
+     */
+    public List<SysStatic> selectSysFinanceMoney();
+
+    public List<SysFinance> selectSysFinanceListOrderByTime();
+
     /**
      * 新增财务格
 - 主要用于存储多个格之间的信息
@@ -53,6 +70,11 @@ public interface ISysFinanceService
      * @return 结果
      */
     public int updateSysFinance(SysFinance sysFinance);
+
+    /**
+     * 只更新Flag和时间
+     */
+    public int updateSysFinanceFlagInfo(SysFinance sysFinance);
 
     /**
      * 批量删除财务格

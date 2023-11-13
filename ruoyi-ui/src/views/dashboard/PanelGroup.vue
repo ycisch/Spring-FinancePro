@@ -1,54 +1,59 @@
 <template>
   <el-row :gutter="40" class="panel-group">
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
+      <div class="card-panel" @click="handleSetLineChartData('xinjiang')">
         <div class="card-panel-icon-wrapper icon-people">
-          <svg-icon icon-class="peoples" class-name="card-panel-icon" />
+          <!-- <svg-icon icon-class="peoples" class-name="card-panel-icon" />
+           -->
+           <svg-icon icon-class="hetao" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            访客
+            新疆核桃
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="Number(info.expendAllInfo)" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('messages')">
+      <div class="card-panel" @click="handleSetLineChartData('shangdong')">
         <div class="card-panel-icon-wrapper icon-message">
-          <svg-icon icon-class="message" class-name="card-panel-icon" />
+          <!-- <svg-icon icon-class="message" class-name="card-panel-icon" /> -->
+          <svg-icon icon-class="shouru" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            消息
+            山东收入
           </div>
-          <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="Number(info.incomeAllInfo)" :duration="3000" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('purchases')">
+      <div class="card-panel" @click="handleSetLineChartData('income')">
         <div class="card-panel-icon-wrapper icon-money">
-          <svg-icon icon-class="money" class-name="card-panel-icon" />
+          <!-- <svg-icon icon-class="money" class-name="card-panel-icon" /> -->
+          <svg-icon icon-class="shouru1" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            金额
+            收入
           </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="Number(info.incomeAll)" :duration="3200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
     <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel" @click="handleSetLineChartData('shoppings')">
+      <div class="card-panel" @click="handleSetLineChartData('expend')">
         <div class="card-panel-icon-wrapper icon-shopping">
-          <svg-icon icon-class="shopping" class-name="card-panel-icon" />
+          <!-- <svg-icon icon-class="shopping" class-name="card-panel-icon" /> -->
+          <svg-icon icon-class="zhichu" class-name="card-panel-icon" />
         </div>
         <div class="card-panel-description">
           <div class="card-panel-text">
-            订单
+            支出
           </div>
-          <count-to :start-val="0" :end-val="13600" :duration="3600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="Number(info.expendAll)" :duration="3600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -57,16 +62,31 @@
 
 <script>
 import CountTo from 'vue-count-to'
+import { getStaticInfo, getStaticInfoList } from "@/api/system/static";
+
 
 export default {
   components: {
     CountTo
   },
+  data() {
+    return {
+      info:{},
+    }
+  },
   methods: {
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type)
+    },
+    getStaticInfo(){
+      getStaticInfo().then(respone=>{
+        this.info = respone;
+      })
     }
-  }
+  },
+  mounted() {
+    this.getStaticInfo();
+  },
 }
 </script>
 
@@ -95,36 +115,36 @@ export default {
       }
 
       .icon-people {
-        background: #40c9c6;
+        // background: #40c9c6;
       }
 
       .icon-message {
-        background: #36a3f7;
+        // background: #36a3f7;
       }
 
       .icon-money {
-        background: #f4516c;
+        // background: #f4516c;
       }
 
       .icon-shopping {
-        background: #34bfa3
+        // background: #34bfa3
       }
     }
 
     .icon-people {
-      color: #40c9c6;
+      // color: #40c9c6;
     }
 
     .icon-message {
-      color: #36a3f7;
+      // color: #36a3f7;
     }
 
     .icon-money {
-      color: #f4516c;
+      // color: #f4516c;
     }
 
     .icon-shopping {
-      color: #34bfa3
+      // color: #34bfa3
     }
 
     .card-panel-icon-wrapper {
