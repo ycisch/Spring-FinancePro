@@ -7,6 +7,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ruoyi.framework.web.domain.server.Sys;
+import com.ruoyi.system.domain.SysFinanceRecord;
+import com.ruoyi.system.service.ISysFinanceRecordService;
+import com.ruoyi.system.service.impl.SysFinanceRecordServiceImpl;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,6 +43,9 @@ public class SysFinanceController extends BaseController {
     @Autowired
     private ISysFinanceService sysFinanceService;
 
+    @Autowired
+    private ISysFinanceRecordService sysFinanceRecordService;
+
     /**
      * 查询财务格
      * - 主要用于存储多个格之间的信息列表
@@ -47,6 +54,14 @@ public class SysFinanceController extends BaseController {
     @GetMapping("/list")
     public TableDataInfo list(SysFinance sysFinance) {
         startPage();
+        sysFinance.setDeleted("0");
+        List<SysFinance> list = sysFinanceService.selectSysFinanceList(sysFinance);
+        return getDataTable(list);
+    }
+
+    @PreAuthorize("@ss.hasPermi('system:finance:list')")
+    @GetMapping("/listAll")
+    public TableDataInfo listAll(SysFinance sysFinance) {
         sysFinance.setDeleted("0");
         List<SysFinance> list = sysFinanceService.selectSysFinanceList(sysFinance);
         return getDataTable(list);
@@ -112,7 +127,21 @@ public class SysFinanceController extends BaseController {
             sysFinance.setFinanceExpendTime(sysFinance.getFinanceCreate());
         }
         sysFinance.setFinanceUpdate(sysFinance.getFinanceCreate());
-        return toAjax(sysFinanceService.insertSysFinance(sysFinance));
+        int i = sysFinanceService.insertSysFinance(sysFinance);
+
+        SysFinanceRecord sysFinanceRecord = new SysFinanceRecord();
+        if (sysFinance.getFinanceFlag() != null && "0".equals(sysFinance.getFinanceFlag())){
+            sysFinanceRecord.setFinanceIds(sysFinance.getFinanceId());
+            if(sysFinance.getFinanceExpenditure() != null){
+                sysFinanceRecord.setRecordMoney(sysFinance.getFinanceExpenditure());
+            } else {
+                sysFinanceRecord.setRecordMoney(sysFinance.getFinanceIncome());
+            }
+            sysFinanceRecord.setRecordTime(sysFinance.getFinanceCreate());
+            sysFinanceRecordService.insertSysFinanceRecord(sysFinanceRecord);
+        }
+
+        return toAjax(true);
     }
 
     /**

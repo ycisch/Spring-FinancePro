@@ -129,4 +129,9 @@ public class SysFinanceServiceImpl implements ISysFinanceService
     {
         return sysFinanceMapper.deleteSysFinanceByFinanceId(financeId);
     }
+
+    @Override
+    public List<SysFinance> getFinanceRecordInfo(Long financeId) {
+        return sysFinanceMapper.getFinanceRecordInfo(financeId);
+    }
 }

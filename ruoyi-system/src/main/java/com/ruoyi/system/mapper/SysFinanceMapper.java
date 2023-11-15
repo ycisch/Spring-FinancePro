@@ -94,4 +94,6 @@ public interface SysFinanceMapper
      * @return 结果
      */
     public int deleteSysFinanceByFinanceIds(Long[] financeIds);
+
+    public List<SysFinance> getFinanceRecordInfo(Long financeId);
 }

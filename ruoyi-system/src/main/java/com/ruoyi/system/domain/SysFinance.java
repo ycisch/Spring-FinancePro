@@ -70,8 +70,19 @@ public class SysFinance extends BaseEntity
     @Excel(name = "结账时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date financeExpendTime;
 
+    private String financeMode;
+
     public List<SysFinanceRecord> getSysFinanceRecordList() {
         return sysFinanceRecordList;
+    }
+
+
+    public String getFinanceMode() {
+        return financeMode;
+    }
+
+    public void setFinanceMode(String financeMode) {
+        this.financeMode = financeMode;
     }
 
     public void setSysFinanceRecordList(List<SysFinanceRecord> sysFinanceRecordList) {

@@ -10,10 +10,13 @@
         <result property="recordTime"    column="record_time"    />
         <result property="recordMoney"    column="record_money"    />
         <result property="operator"    column="operator"    />
+        <result property="deleted"    column="deleted"    />
+        <result property="recordInfo"    column="record_info"    />
+        <result property="recordImg"    column="record_img"    />
     </resultMap>
 
     <sql id="selectSysFinanceRecordVo">
-        select id, finance_ids, record_time, record_money, operator from sys_finance_record
+        select id, finance_ids, record_time, record_money, operator,deleted,record_info from sys_finance_record
     </sql>
 
     <select id="selectSysFinanceRecordList" parameterType="SysFinanceRecord" resultMap="SysFinanceRecordResult">
@@ -22,7 +25,9 @@
             <if test="financeIds != null "> and finance_ids = #{financeIds}</if>
             <if test="recordTime != null "> and record_time = #{recordTime}</if>
             <if test="recordMoney != null "> and record_money = #{recordMoney}</if>
+            <if test="recordInfo != null "> and record_info = #{recordInfo}</if>
             <if test="operator != null  and operator != ''"> and operator = #{operator}</if>
+            <if test="deleted != null  and deleted != ''"> and deleted = #{deleted}</if>
         </where>
     </select>
 
@@ -38,12 +43,16 @@
             <if test="recordTime != null">record_time,</if>
             <if test="recordMoney != null">record_money,</if>
             <if test="operator != null">operator,</if>
+            <if test="deleted != null">deleted,</if>
+            <if test="recordInfo != null">record_info,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="financeIds != null">#{financeIds},</if>
             <if test="recordTime != null">#{recordTime},</if>
             <if test="recordMoney != null">#{recordMoney},</if>
             <if test="operator != null">#{operator},</if>
+            <if test="deleted != null">#{deleted},</if>
+            <if test="recordInfo != null">#{recordInfo},</if>
         </trim>
     </insert>
 
@@ -54,6 +63,8 @@
             <if test="recordTime != null">record_time = #{recordTime},</if>
             <if test="recordMoney != null">record_money = #{recordMoney},</if>
             <if test="operator != null">operator = #{operator},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            <if test="recordInfo != null">record_info = #{recordInfo},</if>
         </trim>
         where id = #{id}
     </update>

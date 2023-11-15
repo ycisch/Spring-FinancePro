@@ -38,6 +38,37 @@ public class SysFinanceRecord extends BaseEntity
     @Excel(name = "操作人")
     private String operator;
 
+    private String deleted;
+
+
+    private String recordInfo;
+
+    private String recordImg;
+
+    public String getRecordImg() {
+        return recordImg;
+    }
+
+    public void setRecordImg(String recordImg) {
+        this.recordImg = recordImg;
+    }
+
+    public String getRecordInfo() {
+        return recordInfo;
+    }
+
+    public void setRecordInfo(String recordInfo) {
+        this.recordInfo = recordInfo;
+    }
+
+    public String getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(String deleted) {
+        this.deleted = deleted;
+    }
+
     public void setId(Long id)
     {
         this.id = id;

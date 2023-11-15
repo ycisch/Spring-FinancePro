@@ -95,4 +95,6 @@ public interface ISysFinanceService
      * @return 结果
      */
     public int deleteSysFinanceByFinanceId(Long financeId);
+
+    public List<SysFinance> getFinanceRecordInfo(Long financeId);
 }
