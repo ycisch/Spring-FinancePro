@@ -65,8 +65,8 @@ public class SysFinanceServiceImpl implements ISysFinanceService
     }
 
     @Override
-    public List<SysFinance> selectSysFinanceListOrderByTime() {
-        return sysFinanceMapper.selectSysFinanceListOrderByTime();
+    public List<SysFinance> selectSysFinanceListOrderByTime(SysFinance sysFinance) {
+        return sysFinanceMapper.selectSysFinanceListOrderByTime(sysFinance);
     }
 
     /**

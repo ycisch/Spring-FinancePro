@@ -25,6 +25,10 @@
         <result property="typeId" column="typeId"/>
         <result property="expendMoney" column="expendMoney"/>
         <result property="incomeMoney" column="incomeMoney"/>
+        <result property="expendMoneyAll" column="expendMoneyAll"/>
+        <result property="incomeMoneyAll" column="incomeMoneyAll"/>
+        <result property="expendRecordMoney" column="expendRecordMoney"/>
+        <result property="incomeRecordMoney" column="incomeRecordMoney"/>
     </resultMap>
 
     <resultMap type="SysFinanceRecord" id="SysFinanceRecordResult">
@@ -137,6 +141,7 @@
             <if test="financeFlag != null  and financeFlag != ''">and a.finance_flag = #{financeFlag}</if>
             <if test="deleted != null  and deleted != ''">and a.deleted = #{deleted}</if>
             <if test="financeMode != null  and financeMode != ''">and a.finance_mode = #{financeMode}</if>
+<!--            <if test="financeId != null  and financeId != ''">and a.finance_id = #{financeId}</if>-->
         </where>
     </select>
 
@@ -159,8 +164,12 @@
 
     <select id="selectSysFinanceMoney" resultMap="SysStaticResult">
         SELECT
-            SUM( sys.finance_expenditure ) - IFNULL( SUM( sfr.record_money ), 0 ) AS expendMoney,
-            SUM( finance_income ) - IFNULL( SUM( sfr.record_money ), 0 ) AS incomeMoney,
+            SUM( sys.finance_expenditure ) AS expendMoneyAll,
+            SUM( sys.finance_expenditure) - IFNULL(SUM(CASE WHEN sys.finance_mode = 1 THEN sfr.record_money ELSE 0 END), 0) AS expendMoney,
+            SUM( sys.finance_income ) - IFNULL(SUM(CASE WHEN sys.finance_mode = 0 THEN sfr.record_money ELSE 0 END), 0) AS incomeMoney,
+            SUM( finance_income) AS incomeMoneyAll,
+            SUM( CASE WHEN sys.finance_mode = 1 THEN sfr.record_money ELSE 0 END) AS expendRecordMoney,
+            SUM( CASE WHEN sys.finance_mode = 0 THEN sfr.record_money ELSE 0 END) AS incomeRecordMoney,
             sys.finance_type AS typeId,
             ty.type_name AS staticName
         FROM
@@ -189,9 +198,14 @@
 
     <select id="selectSysFinanceListOrderByTime" parameterType="SysFinance" resultMap="SysFinanceSysTypeResult">
         <include refid="selectSysFinanceTypeVo"/>
-        WHERE a.deleted = '0'
+        <where>
+            a.deleted = '0'
+            <if test="financeType != null  and financeType != ''">and a.finance_type = #{financeType}</if>
+            <if test="financeId != null  and financeId != ''">and a.finance_id = #{financeId}</if>
+        </where>
         ORDER BY
-        a.finance_create DESC
+        a.finance_create DESC,
+        a.finance_id DESC
     </select>
 
     <select id="selectSysFinanceByFinanceId" parameterType="Long" resultMap="SysFinanceSysTypeResult">

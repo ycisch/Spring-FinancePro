@@ -48,7 +48,7 @@ public interface SysFinanceMapper
      */
     public List<SysStatic> selectSysFinanceMoney();
 
-    public List<SysFinance> selectSysFinanceListOrderByTime();
+    public List<SysFinance> selectSysFinanceListOrderByTime(SysFinance sysFinance);
 
     /**
      * 新增财务格

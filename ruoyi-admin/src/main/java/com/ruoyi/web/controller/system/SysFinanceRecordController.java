@@ -119,7 +119,7 @@ public class SysFinanceRecordController extends BaseController {
         try {
             checkRecord(sysFinanceRecord);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("金额输入有误(结账金额与总金额不符合)，请重新输入");
         }
         return toAjax(true);
     }

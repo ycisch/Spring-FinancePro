@@ -130,7 +130,7 @@ public class SysFinanceController extends BaseController {
         int i = sysFinanceService.insertSysFinance(sysFinance);
 
         SysFinanceRecord sysFinanceRecord = new SysFinanceRecord();
-        if (sysFinance.getFinanceFlag() != null && "0".equals(sysFinance.getFinanceFlag())){
+        if (sysFinance.getFinanceFlag() != null && "0".equals(sysFinance.getFinanceFlag()) && sysFinance.getFinanceType() != 21){
             sysFinanceRecord.setFinanceIds(sysFinance.getFinanceId());
             if(sysFinance.getFinanceExpenditure() != null){
                 sysFinanceRecord.setRecordMoney(sysFinance.getFinanceExpenditure());

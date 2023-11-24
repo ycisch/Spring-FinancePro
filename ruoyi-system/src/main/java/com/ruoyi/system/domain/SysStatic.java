@@ -20,4 +20,16 @@ public class SysStatic {
     //收入
     private BigDecimal incomeMoney;
 
+    //总支出
+    private BigDecimal expendMoneyAll;
+
+    //总收入
+    private BigDecimal incomeMoneyAll;
+
+    //支出结账金额
+    private BigDecimal expendRecordMoney;
+
+    //收入结账金额
+    private BigDecimal incomeRecordMoney;
+
 }

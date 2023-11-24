@@ -51,7 +51,7 @@ public class StaticController extends BaseController {
     @GetMapping("/getTableInfo")
     public TableDataInfo getTableInfo(SysFinance sysFinance){
         startPage();
-        List<SysFinance> list = sysFinanceService.selectSysFinanceListOrderByTime();
+        List<SysFinance> list = sysFinanceService.selectSysFinanceListOrderByTime(sysFinance);
         return getDataTable(list);
     }
 
@@ -63,6 +63,8 @@ public class StaticController extends BaseController {
     public HashMap<String, Object> getStaticInfoList(@RequestParam String type) {
         HashMap<String, Object> result = new HashMap<>();
         List<BigDecimal> arrayMoney = new ArrayList<>();
+        List<BigDecimal> arrayMoneyAll = new ArrayList<>();
+        List<BigDecimal> recordMoney = new ArrayList<>();
         List<String> arrayName = new ArrayList<>();
 
         List<BigDecimal> arrayIncomeMoney = new ArrayList<>();
@@ -76,15 +78,19 @@ public class StaticController extends BaseController {
 
             HashMap<String, String> hashMap = new HashMap<>();
             SysStatic sysStatic = sysStaticList.get(i);
-            if ("expend".equals(type) && sysStatic.getExpendMoney() != null && sysStatic.getExpendMoney().compareTo(new BigDecimal(0)) != 0) {
+            if ("expend".equals(type) && sysStatic.getExpendMoney() != null && sysStatic.getExpendMoneyAll().compareTo(new BigDecimal(0)) != 0) {
                 arrayMoney.add(sysStatic.getExpendMoney());
+                arrayMoneyAll.add(sysStatic.getExpendMoneyAll());
+                recordMoney.add(sysStatic.getExpendRecordMoney());
                 arrayName.add(sysStatic.getStaticName());
                 hashMap.put("value", String.valueOf(sysStatic.getExpendMoney()));
                 hashMap.put("name", sysStatic.getStaticName());
                 list.add(hashMap);
             }
-            if ("income".equals(type) && sysStatic.getIncomeMoney() != null && sysStatic.getIncomeMoney().compareTo(new BigDecimal(0)) != 0) {
+            if ("income".equals(type) && sysStatic.getIncomeMoney() != null && sysStatic.getIncomeMoneyAll().compareTo(new BigDecimal(0)) != 0) {
                 arrayMoney.add(sysStatic.getIncomeMoney());
+                arrayMoneyAll.add(sysStatic.getIncomeMoneyAll());
+                recordMoney.add(sysStatic.getIncomeRecordMoney());
                 arrayName.add(sysStatic.getStaticName());
                 hashMap.put("value", String.valueOf(sysStatic.getIncomeMoney()));
                 hashMap.put("name", sysStatic.getStaticName());
@@ -93,6 +99,8 @@ public class StaticController extends BaseController {
         }
 
         result.put("arrayMoney", arrayMoney);
+        result.put("arrayMoneyAll", arrayMoneyAll);
+        result.put("recordMoney", recordMoney);
         result.put("arrayName", arrayName);
         result.put("pieInfo", list);
         redisCache.setCacheObject(type, result);
